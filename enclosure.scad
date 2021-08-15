@@ -30,7 +30,6 @@ $fn=50;
 include <dimensions.scad>
 use <cm4iov5.scad>
 use <fillets.scad>
-include <fans.scad>
 fr = 2.5; // fillet radius in mm
 
 /**********************************************************
@@ -60,13 +59,14 @@ module bottom() {
           cube([bd_w, bd_l, box_h]);
           sphere(r=box_edge_r);
         }
-        // Chop off top of box
+        translate([sdcard_x+sdcard_w/2, sdcard_y-5, -10])
+        cube([18.5, 6, lid_h-1]);    // Chop off top of box
         translate([-5,-5,box_h])
           cube([box_w, box_l, box_h]);
         // Hollow out the inside
-        translate([bd_corner_r/2, bd_corner_r/2, bd_corner_r/2])
+        translate([bd_corner_r/2-.5, bd_corner_r/2-.5, bd_corner_r/2])
         minkowski() {
-          cube([bd_w-bd_corner_r, bd_l-bd_corner_r, box_h+2]);
+          cube([bd_w-bd_corner_r+.5, bd_l-bd_corner_r+.5, box_h+2]);
           sphere(bd_corner_r/2);
         }
         // TODO: Channel for lid
@@ -83,48 +83,11 @@ module bottom() {
         mounting_stud();
       translate([mh6_x, mh6_y, 0])
         mounting_stud();
+    }
       // test blocks go here
-    } // box-body union
-    // Cutouts
-    /*
-    union() { 
-      translate([hdmi0_x - hdmi_w/2, hdmi0_y-6, bd_top])
-        cube([hdmi_w, 12, box_h]);
-      translate([hdmi1_x - hdmi_w/2, hdmi1_y-6, bd_top])
-        cube([hdmi_w, 12, box_h]);
-      translate([eth_x-eth_w/2, eth_y-6, bd_top])
-        cube([eth_w, 12, box_h]);
-      translate([usb_x-usb_w/2, usb_y-6, bd_top])
-        cube([usb_w, 12, box_h]);
-      translate([usbslv_x-usbslv_w/2, usbslv_y-6, bd_top])
-        cube([usbslv_w, 12, box_h]);
-      translate([sdcard_x-sdcard_w/2, sdcard_y-6, bd_top])
-        cube([sdcard_w, 12, box_h]);
-      translate([p12v_x-p12v_w/2, p12v_y-6, bd_top])
-        cube([p12v_w, 12, box_h]);
-      translate([p5v_x-p5v_w/2, p5v_y-6, bd_top])
-        cube([p5v_w, 12, box_h]);
-      translate([j2_x-j2_w/2, j2_y-6, bd_top])
-        cube([j2_w, 12, box_h]);
-      translate([j2_x-j2_w/2, j2_y-6, bd_top])
-        cube([j2_w, 12, box_h]);
-      translate([disp0_x-disp_w/2, disp0_y-6, bd_top])
-        cube([disp_w, 12, box_h]);
-      translate([disp1_x-disp_w/2, disp1_y-6, bd_top])
-        cube([disp_w, 12, box_h]);
-      translate([cam1_x-cam_w/2, cam1_y-6, bd_top])
-        cube([cam_w, 12, box_h]);
-      translate([cam0_x-6, cam0_y-cam_w/2, bd_top])
-        cube([12, cam_w, box_h]);
-      translate([batt_x-batt_r-8, batt_y-batt_r, bd_top-0.5])
-        cube([12, batt_w, box_h]);
-    } // cutouts union
-    */
-    /*
-    translate([box_w/2, box_l/2, -10])
-      cylinder(r=20, h=20);
-      */
-  } // difference
+     // box-body union
+    my_cutout(9.6);
+   } // difference
 }
 
 /**********************************************************
@@ -172,9 +135,45 @@ module s5(x) {
   side_vent(x+40);
 }
 
+module my_cutout(zmove){
+    union(){
+      translate([hdmi0_x - hdmi_w/2, hdmi0_y-6, bd_top - box_h - 1+zmove])
+        cube([hdmi_w, 12, hdmi_h+1]);
+      translate([hdmi1_x - hdmi_w/2, hdmi1_y-6, bd_top - box_h - 1+zmove])
+        cube([hdmi_w, 12, hdmi_h+1]);
+      translate([d1_x - led_w/2, d1_y-6, bd_top - box_h - 1+zmove])
+        cube([led_w, 12, led_h+1]);
+      translate([d2_x - led_w/2, d2_y-6, bd_top - box_h - 1+zmove])
+        cube([led_w, 12, led_h+1]);
+      translate([eth_x-eth_w/2-2, eth_y-6, bd_top - box_h - 1+zmove])
+        cube([eth_w+2, 12, eth_h+1]);
+      translate([usb_x-usb_w/2-5, usb_y-6, bd_top - box_h - 1+zmove])
+        cube([usb_w+7, 12, usb_h+1]);
+      translate([usbslv_x-usbslv_w/2, usbslv_y-6, bd_top - box_h -1+zmove])
+        cube([usbslv_w, 12, usbslv_h+2]);
+      if(zmove == 0){
+        translate([p12v_x-p12v_w/2-3, p12v_y-6, bd_top - box_h - 1])
+          cube([p12v_w+6, 12, p12v_h+1+3]);
+      }
+      translate([sdcard_x-sdcard_w/2, sdcard_y-6, bd_top - box_h -1+zmove])
+        cube([sdcard_w-.3, 12, sdcard_h+2]);
+        
+        /*PCI-e cutout*/
+      translate([sdcard_x+sdcard_w/2, sdcard_y-5, bd_top - box_h+1.7*p12v_h+zmove])
+        cube([18.5, 3, lid_h+10]);
+      translate([sdcard_x+sdcard_w/2, sdcard_y-2.5, bd_top - box_h-1+zmove])
+        cube([18.5, 3, lid_h+10]);
+      translate([sdcard_x+sdcard_w/2-2, sdcard_y, bd_top+zmove])
+        cube([30, 95, lid_h+10]);
+       
+      translate([p5v_x-p5v_w/2, p5v_y-6, bd_top - box_h - 1+zmove])
+        cube([p5v_w, 12, p5v_h+1]);
+     }
+}
+
 module top() {
-  /* color("yellow", alpha=0.2) */
-  color("yellow")
+  color("yellow", alpha=0.5)
+  /* color("yellow") */
   difference () {
     // The lid body
     union() {
@@ -197,8 +196,8 @@ module top() {
       }
       // Mounting studs
       translate([mh2_x, mh2_y, bd_h]) cylinder(r=stud_r, h=lid_h + bd_corner_r/2);
-      translate([mh4_x, mh4_y, bd_h]) cylinder(r=stud_r, h=lid_h + bd_corner_r/2);
-      translate([mh5_x, mh5_y, bd_h]) cylinder(r=stud_r, h=lid_h + bd_corner_r/2);
+   //   translate([mh4_x, mh4_y, bd_h]) cylinder(r=stud_r, h=lid_h + bd_corner_r/2);
+  //    translate([mh5_x, mh5_y, bd_h]) cylinder(r=stud_r, h=lid_h + bd_corner_r/2);
       translate([mh6_x, mh6_y, bd_h]) cylinder(r=stud_r, h=lid_h + bd_corner_r/2);
       // Fill-ins (opposite of cutouts)
       // None in this design
@@ -206,26 +205,8 @@ module top() {
     } // lid-body union
     // Cutouts on sides
     union() { 
-      translate([hdmi0_x - hdmi_w/2, hdmi0_y-6, bd_top - box_h - 1])
-        cube([hdmi_w, 12, hdmi_h+1]);
-      translate([hdmi1_x - hdmi_w/2, hdmi1_y-6, bd_top - box_h - 1])
-        cube([hdmi_w, 12, hdmi_h+1]);
-      translate([d1_x - led_w/2, d1_y-6, bd_top - box_h - 1])
-        cube([led_w, 12, led_h+1]);
-      translate([d2_x - led_w/2, d2_y-6, bd_top - box_h - 1])
-        cube([led_w, 12, led_h+1]);
-      translate([eth_x-eth_w/2, eth_y-6, bd_top - box_h - 1])
-        cube([eth_w, 12, eth_h+1]);
-      translate([usb_x-usb_w/2, usb_y-6, bd_top - box_h - 1])
-        cube([usb_w, 12, usb_h+1]);
-      translate([usbslv_x-usbslv_w/2, usbslv_y-6, bd_top - box_h -1])
-        cube([usbslv_w, 12, usbslv_h+1]);
-      translate([sdcard_x-sdcard_w/2, sdcard_y-6, bd_top - box_h -1])
-        cube([sdcard_w, 12, sdcard_h]);
-      translate([p12v_x-p12v_w/2, p12v_y-6, bd_top - box_h - 1])
-        cube([p12v_w, 12, p12v_h+1]);
-      translate([p5v_x-p5v_w/2, p5v_y-6, bd_top - box_h - 1])
-        cube([p5v_w, 12, p5v_h+1]);
+      my_cutout(0);
+     //PCIe card
       hull() {
         translate([disp0_x-disp_w/2,
                 disp0_y-6,
@@ -264,28 +245,15 @@ module top() {
     } // jumper-and-header-access union
     // Ventilation
     union() {
-      // v4(cm4_x + 5, cm4_y + 5);
-      // v3(cm4_x + 10, cm4_y + 12.5);
-      // v4(cm4_x + 5, cm4_y + 20);
-      // v3(cm4_x + 10, cm4_y + 27.5);
-      // v4(cm4_x + 5, cm4_y + 35);
-      // v3(cm4_x + 10, cm4_y + 42.5);
-      // v3(cm4_x + 15, cm4_y + 50);
+      v4(cm4_x + 5, cm4_y + 5);
+      v3(cm4_x + 10, cm4_y + 12.5);
+      v4(cm4_x + 5, cm4_y + 20);
+      v3(cm4_x + 10, cm4_y + 27.5);
+      v4(cm4_x + 5, cm4_y + 35);
+      v3(cm4_x + 10, cm4_y + 42.5);
+      v3(cm4_x + 15, cm4_y + 50);
       s5(cm4_x);
     } // vents union
-    // Fan mounts and inlet
-    union() {
-      translate([cm4_x + hole_offset, cm4_y + 3 + hole_offset, lid_h - bd_corner_r])
-        cylinder(r = hole_r, h = 10);
-      translate([cm4_x + lw - hole_offset, cm4_y + 3 + hole_offset, lid_h - bd_corner_r])
-        cylinder(r = hole_r, h = 10);
-      translate([cm4_x + hole_offset, cm4_y + 3 + lw - hole_offset, lid_h - bd_corner_r])
-        cylinder(r = hole_r, h = 10);
-      translate([cm4_x + lw - hole_offset, cm4_y + 3 + lw - hole_offset, lid_h - bd_corner_r])
-        cylinder(r = hole_r, h = 10);
-      translate([cm4_x + lw/2, cm4_y + 3 + lw/2, lid_h - bd_corner_r])
-        cylinder(r = lw/2 - end_thk, h = 10);
-    }
     // mounting stud holes
     translate([mh2_x, mh2_y, 0]) cylinder(r=stud_hole_r, h=100);
     translate([mh2_x, mh2_y, box_h + 12]) cylinder(r=5, h=100);
@@ -305,22 +273,10 @@ module top() {
 
 // Exploded view
 // translate([0, 0, 80]) cm4iov5();
-translate([0, 0, bd_top + 20]) cm4iov5();
-translate([0, 0, 0]) bottom();
+//translate([0, 0, bd_top]) cm4iov5();
+//translate([0, 0, 0]) bottom();
 // translate([0, 0, box_h + 20]) top();
-translate([cm4_x, cm4_y + 3, box_h + lid_h + bd_corner_r/2 - fan_body_h + 50]) 40mmfan();
-translate([0, 0, box_h + 90]) top();
-
-// Assembled view
-/*
-translate([0, 0, bd_top]) cm4iov5();
-translate([0, 0, 0]) bottom();
-translate([cm4_x, cm4_y + 3, box_h + lid_h + bd_corner_r/2 - fan_body_h]) 40mmfan();
 translate([0, 0, box_h]) top();
-*/
 
-// Laid out to print
-/*
-translate([box_edge_r, box_edge_r, box_edge_r]) bottom();
-translate([box_edge_r, 2*box_l + 15, lid_h + box_edge_r]) rotate([180, 0, 0]) top();
-*/
+
+
